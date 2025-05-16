@@ -107,12 +107,20 @@ const PaperList = () => {
         <h1>Available Papers</h1>
         <div className="header-buttons">
           {isAdmin && (
-            <button 
-              onClick={() => setShowForm(true)}
-              className="create-btn"
-            >
-              Create Paper
-            </button>
+            <>
+              <button 
+                onClick={() => setShowForm(true)}
+                className="create-btn"
+              >
+                Create Paper
+              </button>
+              <button 
+                onClick={() => navigate('/admin-dashboard')}
+                className="dashboard-btn"
+              >
+                Admin Dashboard
+              </button>
+            </>
           )}
           <button 
             className="profile-btn"

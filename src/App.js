@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import './App.css';
 
 // Components
-import Header from './components/Header';
+// import Header from './components/Header'; 
 import Footer from './components/Footer';
+import Navbar from './components/Navbar';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -16,6 +17,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PaperManagePage from './pages/PaperManagePage';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -23,7 +25,8 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Header />
+        <Navbar />
+       
         <div className="content">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -39,6 +42,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<Navigate to="/" />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
           </Routes>
         </div>
         <Footer />

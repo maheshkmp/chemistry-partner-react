@@ -4,8 +4,9 @@ import './Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const isAuthenticated = localStorage.getItem('token');
   const username = localStorage.getItem('username');
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   const handleLogout = () => {
     localStorage.clear();
@@ -14,15 +15,24 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="nav-brand">Chemistry Partner</div>
+      <div className="nav-brand">
+        <Link to="/" className="brand-link">Chemistry Partner</Link>
+      </div>
       <div className="nav-items">
         {isAuthenticated ? (
           <>
+            <Link to="/papers" className="nav-link">Papers</Link>
+            {isAdmin && (
+              <Link to="/admin" className="nav-link">Admin Panel</Link>
+            )}
             <span className="welcome-text">Welcome, {username}</span>
             <button onClick={handleLogout} className="nav-button">Logout</button>
           </>
         ) : (
-          <Link to="/login" className="nav-button">Login</Link>
+          <>
+            <Link to="/login" className="nav-button">Login</Link>
+            <Link to="/register" className="nav-button">Register</Link>
+          </>
         )}
       </div>
     </nav>
