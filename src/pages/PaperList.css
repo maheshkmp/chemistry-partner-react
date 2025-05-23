@@ -26,7 +26,7 @@
   color: #333;
 }
 
-.start-button {
+.start-btn {
   display: inline-block;
   padding: 10px 20px;
   background: #007bff;
@@ -36,7 +36,7 @@
   margin-top: 10px;
 }
 
-.start-button:hover {
+.start-btn:hover {
   background: #0056b3;
 }
 

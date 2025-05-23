@@ -157,7 +157,7 @@ const PaperList = () => {
             <h3>{paper.title}</h3>
             <p>{paper.description}</p>
             <div className="paper-actions">
-              <button onClick={() => navigate(`/papers/${paper.id}`)}>
+              <button className="start-btn" onClick={() => navigate(`/papers/${paper.id}`)}>
                 Start Paper
               </button>
               {isAdmin && (
