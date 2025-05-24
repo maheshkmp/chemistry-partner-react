@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './PaperForm.css';
+import MCQUploadButton from './MCQUploadButton';
 
 const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
     total_marks: paper?.total_marks || 100
   });
   const [pdfFile, setPdfFile] = useState(null);
+  const [mcqFile, setMcqFile] = useState(null);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,14 +25,12 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.includes('pdf')) {
       setError('Please upload a PDF file');
       return;
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       setError('File size must be less than 10MB');
       return;
@@ -40,6 +40,20 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
     setError('');
   };
 
+  const handleMCQFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      setError('Please upload an Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    setMcqFile(file);
+    setError('');
+  };
+
+  // Update handleSubmit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -47,12 +61,16 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
 
     const formDataWithFile = new FormData();
     
-    Object.keys(formData).forEach(key => {
-      formDataWithFile.append(key, formData[key]);
-    });
+    formDataWithFile.append('title', formData.title);
+    formDataWithFile.append('description', formData.description);
+    formDataWithFile.append('duration_minutes', formData.duration_minutes.toString());
+    formDataWithFile.append('total_marks', formData.total_marks.toString());
     
     if (pdfFile) {
       formDataWithFile.append('pdf_file', pdfFile);
+    }
+    if (mcqFile) {
+      formDataWithFile.append('mcq_file', mcqFile);
     }
 
     try {
@@ -65,7 +83,6 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
   };
 
   const handleCancel = () => {
-    // Reset form data
     setFormData({
       title: '',
       description: '',
@@ -75,7 +92,6 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
     setPdfFile(null);
     setError('');
     
-    // Only call onCancel if it exists
     if (onCancel && typeof onCancel === 'function') {
       onCancel();
     }
@@ -146,6 +162,16 @@ const PaperForm = ({ paper, onSubmit, onCancel, mode = 'create' }) => {
           </div>
         )}
       </div>
+
+      <MCQUploadButton 
+        onChange={handleMCQFileChange}
+        disabled={isSubmitting}
+      />
+      {mcqFile && (
+        <div className="file-info">
+          Selected MCQ file: {mcqFile.name}
+        </div>
+      )}
 
       <div className="button-group">
         <button 

@@ -1,50 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import PaperViewer from '../components/PaperViewer';
-import './PaperView.css';
+import { useParams } from 'react-router-dom';
+import PaperAttempt from '../components/PaperAttempt';
+import axios from 'axios';
 
 const PaperView = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [paper, setPaper] = useState(null);
-  const token = localStorage.getItem('token');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPaper = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/papers/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setPaper(data);
-        }
+        const response = await axios.get(`http://localhost:8000/papers/${id}`);
+        setPaper(response.data);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching paper:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPaper();
-  }, [id, token]);
+  }, [id]);
 
-  return (
-    <div className="paper-view">
-      {paper ? (
-        <>
-          <h1>{paper.title}</h1>
-          <div className="paper-details">
-            <p><strong>Authors:</strong> {paper.authors}</p>
-            <p><strong>Publication Date:</strong> {paper.publication_date}</p>
-            <PaperViewer paperId={id} token={token} />
-          </div>
-        </>
-      ) : (
-        <p>Loading paper...</p>
-      )}
-    </div>
-  );
+  if (loading) return <div>Loading...</div>;
+  if (!paper) return <div>Paper not found</div>;
+
+  return <PaperAttempt paper={paper} />;
 };
 
 export default PaperView;

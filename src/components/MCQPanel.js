@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './MCQPanel.css';
 
-const MCQPanel = ({ isOpen, onClose, onSaveAnswers }) => {
+const MCQPanel = ({ isOpen, onClose, onSaveAnswers, totalMarks, onFinish, isSubmitting }) => {
   const [answers, setAnswers] = useState(Array(50).fill(''));
 
   const handleOptionSelect = (questionIndex, option) => {
@@ -16,15 +16,15 @@ const MCQPanel = ({ isOpen, onClose, onSaveAnswers }) => {
       {isOpen && <div className="mcq-overlay" onClick={onClose} />}
       <div className={`mcq-panel ${isOpen ? 'open' : ''}`}>
         <div className="mcq-header">
-          <h2>Multiple Choice Questions</h2>
+          <h2>Marking Sheet</h2>
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
         <div className="mcq-content">
           {Array.from({ length: 50 }, (_, i) => (
             <div key={i} className="mcq-question">
-              <h3>Question {i + 1}</h3>
+              <span className="question-number">{i + 1}.</span>
               <div className="mcq-options">
-                {['A', 'B', 'C', 'D'].map((option) => (
+                {[1, 2, 3, 4, 5].map((option) => (
                   <label key={option} className="option-label">
                     <input
                       type="radio"
@@ -39,6 +39,15 @@ const MCQPanel = ({ isOpen, onClose, onSaveAnswers }) => {
               </div>
             </div>
           ))}
+        </div>
+        <div className="mcq-footer">
+          <button 
+            className="finish-btn" 
+            onClick={onFinish}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Finish Paper'}
+          </button>
         </div>
       </div>
     </>

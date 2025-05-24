@@ -18,6 +18,7 @@ import Register from './pages/Register';
 import PaperManagePage from './pages/PaperManagePage';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import PaperView from './pages/PaperView';
 
 function App() {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -38,6 +39,7 @@ function App() {
             <Route path="/papers/:paperId/manage" element={<PaperManagePage />} />
             <Route path="/papers/:paperId/finalize" element={<FinalizePaper />} />
             <Route path="/papers/:paperId/check" element={<AnswerCheck />} />
+            <Route path="/papers/:id" element={<PaperView />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<Navigate to="/" />} />

@@ -177,6 +177,7 @@ const PaperList = () => {
                 </>
               )}
             </div>
+            {/* Remove AnswerUpload component */}
           </div>
         ))}
       </div>

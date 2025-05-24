@@ -10,11 +10,77 @@ const TimedPaper = () => {
   const [pdfUrl, setPdfUrl] = useState('');
   const [paperTitle, setPaperTitle] = useState('');
   const [timeLeft, setTimeLeft] = useState(null);
+  const [startTime] = useState(new Date());
+  const [answers, setAnswers] = useState([]);
   const token = localStorage.getItem('token');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [marks, setMarks] = useState(0);
 
-  const handleEndPaper = useCallback(() => {
-    navigate(`/papers/${paperId}/finalize`);
-  }, [navigate, paperId]);
+  const handleEndPaper = useCallback(async () => {
+    try {
+      setIsSubmitting(true);
+      const timeSpent = Math.floor((new Date() - startTime) / 1000);
+      
+      // Format answers to match the backend schema
+      const formattedAnswers = answers
+        .map((answer, index) => ({
+          question_number: index + 1,
+          selected_option: parseInt(answer) || null
+        }))
+        .filter(answer => answer.selected_option !== null);
+
+      const submissionData = {
+        answers: formattedAnswers,
+        time_spent: timeSpent
+      };
+
+      console.log('Submitting data:', submissionData); // Debug log
+
+      const response = await fetch(`http://localhost:8000/papers/${paperId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Response status:', response.status);
+        console.error('Error details:', errorData);
+        throw new Error(errorData.detail || 'Failed to submit paper');
+      }
+
+      const result = await response.json();
+      navigate('/result', { 
+        state: { 
+          totalCorrect: result.total_correct,
+          scorePercentage: result.score_percentage,
+          timeSpent: result.time_spent
+        }
+      });
+    } catch (error) {
+      console.error('Error submitting paper:', error);
+      alert(error.message || 'Error submitting paper. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [navigate, paperId, token, answers, startTime]);
+
+  const handleSaveAnswers = (newAnswers, calculatedMarks) => {
+    setAnswers(newAnswers);
+    setMarks(calculatedMarks);
+  };
+
+  // Format time to include hours
+  const formatTime = (seconds) => {
+    if (seconds === null) return '--:--:--';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     const fetchPaperDetails = async () => {
@@ -38,31 +104,6 @@ const TimedPaper = () => {
   }, [paperId, token]);
 
   useEffect(() => {
-    if (timeLeft === null) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 0) {
-          clearInterval(timer);
-          handleEndPaper();
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, handleEndPaper]);
-
-  // Format time left into MM:SS
-  const formatTime = (seconds) => {
-    if (seconds === null) return '--:--';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  useEffect(() => {
     const fetchPdf = async () => {
       try {
         const response = await fetch(`http://localhost:8000/papers/${paperId}/pdf?token=${token}`);
@@ -81,18 +122,28 @@ const TimedPaper = () => {
     fetchPdf();
   }, [paperId, token]);
 
-  const handleSaveAnswers = (answers) => {
-    console.log('Saved answers:', answers);
-  };
+  useEffect(() => {
+    if (timeLeft === null) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 0) {
+          clearInterval(timer);
+          handleEndPaper();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, handleEndPaper]);
 
   return (
     <div className="timed-paper">
       <div className="paper-header">
         <h2 className="paper-title">{paperTitle || 'Loading...'}</h2>
         <div className="timer">{formatTime(timeLeft)}</div>
-        <button className="end-paper-btn" onClick={handleEndPaper}>
-          End Paper
-        </button>
       </div>
 
       <div className="pdf-viewer">
@@ -110,13 +161,16 @@ const TimedPaper = () => {
         className="mcq-toggle-btn"
         onClick={() => setIsPanelOpen(true)}
       >
-        Show Questions
+        Marking Sheet
       </button>
 
       <MCQPanel 
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
         onSaveAnswers={handleSaveAnswers}
+        totalMarks={marks}
+        onFinish={handleEndPaper}
+        isSubmitting={isSubmitting}
       />
     </div>
   );
