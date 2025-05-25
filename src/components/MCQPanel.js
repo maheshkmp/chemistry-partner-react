@@ -8,7 +8,15 @@ const MCQPanel = ({ isOpen, onClose, onSaveAnswers, totalMarks, onFinish, isSubm
     const newAnswers = [...answers];
     newAnswers[questionIndex] = option;
     setAnswers(newAnswers);
-    onSaveAnswers(newAnswers);
+    
+    // Format answers as an object with question numbers as keys
+    const formattedAnswers = {};
+    newAnswers.forEach((answer, index) => {
+      if (answer !== '') {
+        formattedAnswers[index + 1] = answer;
+      }
+    });
+    onSaveAnswers(formattedAnswers);
   };
 
   return (
